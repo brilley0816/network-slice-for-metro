@@ -1,0 +1,79 @@
+# oairan @ OAIRAN in ~/slice-build-oai/slice-gcn [17:12:44]
+$ docker-compose -f v1-5gcn.yaml ps -a
+      Name                    Command                  State                  Ports
+-----------------------------------------------------------------------------------------------
+mysql              docker-entrypoint.sh mysqld      Up (healthy)   3306/tcp, 33060/tcp
+oai-amf            /bin/bash /openair-amf/bin ...   Up (healthy)   38412/sctp, 80/tcp, 9090/tcp
+oai-ausf           /bin/bash /openair-ausf/bi ...   Up (healthy)   80/tcp
+oai-ext-dn         /bin/bash -c  apt update;  ...   Up (healthy)
+oai-nrf-slice12    /bin/bash /openair-nrf/bin ...   Up (healthy)   80/tcp, 9090/tcp
+oai-nrf-slice3     /bin/bash /openair-nrf/bin ...   Up (healthy)   80/tcp, 9090/tcp
+oai-nssf           /bin/bash /openair-nssf/bi ...   Up (healthy)   80/tcp, 8080/tcp
+oai-smf-slice1     /bin/bash /openair-smf/bin ...   Up (healthy)   80/tcp, 8805/udp, 9090/tcp
+oai-smf-slice2     /bin/bash /openair-smf/bin ...   Up (healthy)   80/tcp, 8805/udp, 9090/tcp
+oai-smf-slice3     /bin/bash /openair-smf/bin ...   Up (healthy)   80/tcp, 8805/udp, 9090/tcp
+oai-spgwu-slice1   /openair-spgwu-tiny/bin/en ...   Up (healthy)   2152/udp, 8805/udp
+oai-spgwu-slice2   /openair-spgwu-tiny/bin/en ...   Up (healthy)   2152/udp, 8805/udp
+oai-udm            /bin/bash /openair-udm/bin ...   Up (healthy)   80/tcp
+oai-udr            /bin/bash /openair-udr/bin ...   Up (healthy)   80/tcp
+vpp-upf-slice3     /openair-upf/bin/entrypoin ...   Up (healthy)   2152/udp, 8085/udp
+
+# oairan @ OAIRAN in ~/slice-build-oai/slice-gcn [17:12:49]
+$ docker exec -it oai-ext-dn ping -c 3 12.4.1.2
+PING 12.4.1.2 (12.4.1.2) 56(84) bytes of data.
+^C
+--- 12.4.1.2 ping statistics ---
+3 packets transmitted, 0 received, 100% packet loss, time 2050ms
+
+
+# oairan @ OAIRAN in ~/slice-build-oai/slice-gcn [17:13:10] C:1
+$ docker exec -it oai-ext-dn ping -c 3 12.1.1.129
+PING 12.1.1.129 (12.1.1.129) 56(84) bytes of data.
+64 bytes from 12.1.1.129: icmp_seq=1 ttl=63 time=9.88 ms
+64 bytes from 12.1.1.129: icmp_seq=2 ttl=63 time=13.5 ms
+^C
+--- 12.1.1.129 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1001ms
+rtt min/avg/max/mdev = 9.887/11.732/13.578/1.848 ms
+
+# oairan @ OAIRAN in ~/slice-build-oai/slice-gcn [17:13:18]
+$ docker exec -it oai-ext-dn ping -c 3 12.1.1.30
+PING 12.1.1.30 (12.1.1.30) 56(84) bytes of data.
+^C
+--- 12.1.1.30 ping statistics ---
+3 packets transmitted, 0 received, 100% packet loss, time 2060ms
+
+
+# oairan @ OAIRAN in ~/slice-build-oai/slice-gcn [17:13:30] C:1
+$ docker exec -it oai-ext-dn ping -c 3 12.1.1.130
+PING 12.1.1.130 (12.1.1.130) 56(84) bytes of data.
+64 bytes from 12.1.1.130: icmp_seq=1 ttl=63 time=14.8 ms
+64 bytes from 12.1.1.130: icmp_seq=2 ttl=63 time=14.8 ms
+64 bytes from 12.1.1.130: icmp_seq=3 ttl=63 time=8.93 ms
+
+# oairan @ OAIRAN in ~/slice-build-oai/slice-gcn [17:17:39]
+$ docker exec -it oai-ext-dn /bin/bash
+root@417df11f91c3:/# ip addr
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+783: eth0@if784: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default
+    link/ether 02:42:c0:a8:46:91 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    inet 192.168.70.145/24 brd 192.168.70.255 scope global eth0
+       valid_lft forever preferred_lft forever
+789: eth1@if790: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default
+    link/ether 02:42:c0:a8:49:91 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    inet 192.168.73.145/24 brd 192.168.73.255 scope global eth1
+       valid_lft forever preferred_lft forever
+root@417df11f91c3:/# ip route add 12.4.1.0/24 via 192.168.73.202 dev eth1
+root@417df11f91c3:/# ping 12.4.1.2
+PING 12.4.1.2 (12.4.1.2) 56(84) bytes of data.
+64 bytes from 12.4.1.2: icmp_seq=2 ttl=63 time=0.969 ms
+^C
+--- 12.4.1.2 ping statistics ---
+2 packets transmitted, 1 received, 50% packet loss, time 1017ms
+rtt min/avg/max/mdev = 0.969/0.969/0.969/0.000 ms
+root@417df11f91c3:/# exit
+exit
+

@@ -1,0 +1,42 @@
+# oairan @ OAIRAN in ~/slice-build-oai/slice-ran [17:08:24]
+$ ls
+init-ran.yaml  v1-ran.yaml
+
+# oairan @ OAIRAN in ~/slice-build-oai/slice-ran [17:08:24]
+$ docker-compose -f v1-ran.yaml up -d
+Creating rfsim5g-oai-gnb-2  ... done
+Creating ueransim           ... done
+Creating rfsim5g-oai-gnb   ... done
+Creating gnbsim             ... done
+Creating rfsim5g-oai-nr-ue2 ... done
+Creating rfsim5g-oai-nr-ue3 ... done
+Creating rfsim5g-oai-nr-ue1 ... done
+
+# oairan @ OAIRAN in ~/slice-build-oai/slice-ran [17:12:29]
+$ docker-compose -f v1-ran.yaml ps -a
+       Name                     Command                  State       Ports
+--------------------------------------------------------------------------
+gnbsim               /gnbsim/bin/entrypoint.sh  ...   Up (healthy)
+rfsim5g-oai-gnb      /opt/oai-gnb/bin/entrypoin ...   Up (healthy)
+rfsim5g-oai-gnb-2    /opt/oai-gnb/bin/entrypoin ...   Up (healthy)
+rfsim5g-oai-nr-ue1   /opt/oai-nr-ue/bin/entrypo ...   Up (healthy)
+rfsim5g-oai-nr-ue2   /opt/oai-nr-ue/bin/entrypo ...   Up (healthy)
+rfsim5g-oai-nr-ue3   /opt/oai-nr-ue/bin/entrypo ...   Up (healthy)
+ueransim             /ueransim/bin/entrypoint.sh      Up (healthy)
+
+# oairan @ OAIRAN in ~/slice-build-oai/slice-ran [17:14:25]
+$ docker logs oai-smf-slice1 | grep "UE IPv4 Address"
+[2022-06-27T11:12:27.652234] [smf] [smf_n1 ] [debug] UE IPv4 Address 12.2.1.2
+[2022-06-27T11:12:27.663936] [smf] [smf_n1 ] [debug] UE IPv4 Address 12.2.1.3
+
+# oairan @ OAIRAN in ~/slice-build-oai/slice-ran [17:15:23]
+$ docker logs oai-smf-slice2 | grep "UE IPv4 Address"
+[2022-06-27T11:12:30.783649] [smf] [smf_n1 ] [debug] UE IPv4 Address 12.1.1.129
+[2022-06-27T11:12:32.575842] [smf] [smf_n1 ] [debug] UE IPv4 Address 12.1.1.130
+[2022-06-27T11:12:35.238962] [smf] [smf_n1 ] [debug] UE IPv4 Address 12.1.1.131
+
+# oairan @ OAIRAN in ~/slice-build-oai/slice-ran [17:15:30]
+$ docker logs oai-smf-slice3 | grep "UE IPv4 Address"
+[2022-06-27T11:12:30.429792] [smf] [smf_n1 ] [debug] UE IPv4 Address 12.4.1.2
+
+

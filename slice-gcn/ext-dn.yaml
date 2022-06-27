@@ -1,0 +1,160 @@
+533     oai_ext_dn:
+534         image: ubuntu:bionic
+535         privileged: true
+536         container_name: oai-ext-dn
+537         entrypoint: /bin/bash -c \
+538               "apt update; apt install -y iptables iproute2 iperf3 iputils-ping;"\
+539               "iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE;"\
+540               "ip route add 12.2.1.2/32 via 192.168.70.142 dev eth0;"\
+541               "ip route add 12.1.1.129/32 via 192.168.70.143 dev eth0;"\
+542               "ip route add 12.1.1.2/32 via 192.168.73.202 dev eth1; sleep infinity"
+543         healthcheck:
+544             test: /bin/bash -c "ip route"
+545             interval: 10s
+546             timeout: 5s
+547             retries: 10
+548         networks:
+549             public_net:
+550                 ipv4_address: 192.168.70.145
+551             public_net_core:
+5   vpp_upf_slice3:
+        image: oai-upf-vpp:latest
+        privileged: true
+        container_name: vpp-upf-slice3
+        environment:
+            - NWI_N3=access.oai.org
+            - NWI_N6=core.oai.org
+            - GW_ID=1
+            - MNC03=95
+            - MCC=208
+            - REALM=3gppnetwork.org
+            - NETWORK_UE_IP=12.2.1.0/24
+            - N3_IPV4_ADDRESS_REMOTE=192.168.70.153 #   GNB  IP Address
+            - N4_IPV4_ADDRESS_REMOTE=192.168.70.141 #   SMF  IP Address
+            - N6_IPV4_ADDRESS_REMOTE=192.168.73.145 # EXT-DN IP Address
+            - VPP_MAIN_CORE=0
+            - VPP_CORE_WORKER=1
+            - VPP_PLUGIN_PATH=/usr/lib/x86_64-linux-gnu/vpp_plugins/
+            - INTERFACE_ACCESS=eth1
+            - INTERFACE_CORE=eth2
+            - INTERFACE_CP=eth0
+            - NSSAI_SD_0=4
+            - SST=4
+            - DNN=oai.ipv4
+            - REGISTER_NRF=yes
+            - NRF_IP_ADDR=192.168.70.137
+            - NRF_PORT=8080
+            - HTTP_VERSION=2
+        depends_on:
+            - oai_nrf_slice3
+        healthcheck:
+            test: /bin/bash -c "pgrep vpp"
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        networks:
+            public_net:
+                ipv4_address: 192.168.70.144
+            public_net_access:
+                ipv4_address: 192.168.72.144
+            public_net_core:
+                ipv4_address: 192.168.73.144
+  52                 ipv4_address: 192.168.73.145
+
+  oai_spgwu_slice1:
+        container_name: oai-spgwu-slice1
+        image: oai-spgwu-tiny:latest
+        environment:
+            - TZ=Europe/Paris
+            - PID_DIRECTORY=/var/run
+            - SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP=eth0
+            - SGW_INTERFACE_NAME_FOR_SX=eth0
+            - PGW_INTERFACE_NAME_FOR_SGI=eth0
+            - NETWORK_UE_NAT_OPTION=yes
+            - NETWORK_UE_IP=12.2.1.0/24
+            - BYPASS_UL_PFCP_RULES=no
+            - MCC=208
+            - MNC=95
+            - MNC03=095
+            - TAC=40960
+            - GW_ID=1
+            - REALM=openairinterface.org
+            - ENABLE_5G_FEATURES=yes
+            - REGISTER_NRF=yes
+            - USE_FQDN_NRF=yes
+            - UPF_FQDN_5G=oai_spgwu_slice1
+            - NRF_IPV4_ADDRESS=192.168.70.136
+            - NRF_PORT=80
+            - NRF_API_VERSION=v1
+            - NRF_FQDN=oai_nrf_slice12
+            - NSSAI_SST_0=2
+            - NSSAI_SD_0=2
+            - DNN_0=default
+        depends_on:
+            - oai_nrf_slice12
+            - oai_smf_slice1
+        cap_add:
+            - NET_ADMIN
+            - SYS_ADMIN
+        cap_drop:
+            - ALL
+        privileged: true
+        volumes:
+            - ./spgwu-healthcheck.sh:/openair-spgwu-tiny/bin/spgwu-healthcheck.sh
+        healthcheck:
+            test: /bin/bash -c "/openair-spgwu-tiny/bin/spgwu-healthcheck.sh"
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        networks:
+            public_net:
+                ipv4_address: 192.168.70.142
+    oai_spgwu_slice2:
+        container_name: oai-spgwu-slice2
+        image: oai-spgwu-tiny:latest
+        environment:
+            - TZ=Europe/Paris
+            - PID_DIRECTORY=/var/run
+            - SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP=eth0
+            - SGW_INTERFACE_NAME_FOR_SX=eth0
+            - PGW_INTERFACE_NAME_FOR_SGI=eth0
+            - NETWORK_UE_NAT_OPTION=yes
+            - NETWORK_UE_IP=12.1.1.0/24
+            - BYPASS_UL_PFCP_RULES=no
+            - MCC=208
+            - MNC=95
+            - MNC03=095
+            - TAC=40960
+            - GW_ID=1
+            - REALM=openairinterface.org
+            - ENABLE_5G_FEATURES=yes
+            - REGISTER_NRF=yes
+            - USE_FQDN_NRF=yes
+            - UPF_FQDN_5G=oai_spgwu_slice2
+            - NRF_IPV4_ADDRESS=192.168.70.136
+            - NRF_PORT=80
+            - NRF_API_VERSION=v1
+            - NRF_FQDN=oai_nrf_slice12
+            - NSSAI_SST_0=3
+            - NSSAI_SD_0=3
+            - DNN_0=oai
+        depends_on:
+            - oai_nrf_slice12
+        cap_add:
+            - NET_ADMIN
+            - SYS_ADMIN
+        cap_drop:
+            - ALL
+        privileged: true
+        volumes:
+            - ./spgwu-healthcheck.sh:/openair-spgwu-tiny/bin/spgwu-healthcheck.sh
+        healthcheck:
+            test: /bin/bash -c "/openair-spgwu-tiny/bin/spgwu-healthcheck.sh"
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        networks:
+            public_net:
+                ipv4_address: 192.168.70.143
+    
+
